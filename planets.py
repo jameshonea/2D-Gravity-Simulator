@@ -1,5 +1,6 @@
 import math
 import time
+import pygame
 
 class planet:
     def __init__(self, xcoord, ycoord, xvel, yvel, mass):
@@ -13,6 +14,14 @@ class planet:
 their properties to calculate the net force on each planet. it then uses these
 forces to calculate the net acceleration (one list for x and one for y)
 on each planet and appends this to a list of accelerations '''
+
+''' this needs to be rewritten. the problem is that i'm calculating the
+force component wise and applying it. this causes wildly inaccurate behavior
+when one of the components is really small. force is dependent on total distance,
+not components. so i must calculate the total magnitude of the force first and
+then break it down into components from there. otherwise even if two objects
+are very far about in the x coordinate, if they have nearly similar y coordinates
+a huge ay will be calculated sending them flying off in the y direction '''
 
 def calculate_a(plist):
     ax_list = []
@@ -133,8 +142,10 @@ def collision_detect(plist):
                     
                     
 
-x = planet(1,0,0,.1,.005)
-y = planet(-1,0,0,-.1,.005)
+
+
+x = planet(100,0,0,0,.5)
+y = planet(-100,0,0,0,.5)
 z = planet(-4,100,3,4,5)
 
 l = []
@@ -144,7 +155,53 @@ l.append(y)
 
 r = 0
 
-while r == 0:
+
+
+pygame.init()
+
+display_width = 800
+display_height = 600
+
+black = (0,0,0)
+planet_color = (255,255,255)
+
+# setup the display
+screen = pygame.display.set_mode((display_width, display_height))
+pygame.display.set_caption('Solar System 2D')
+
+clock = pygame.time.Clock()
+crashed = False
+
+''' the next function is the placement function, which places all of the planets in their
+correct positions on a pygame.surface object for each frame. that is, it runs once
+per loop '''
+
+def place(plist):
+
+    for e in plist:
+
+        xpos = round(e.xcoord + 400)
+        ypos = round(e.ycoord + 300)
+        pygame.draw.circle(screen, planet_color, (xpos, ypos), 4)
+
+while not crashed:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            crashed = True
+
+    x_acceleration, y_acceleration = calculate_a(l)
+    update_coords(l, x_acceleration, y_acceleration)
+    l = collision_detect(l)
+
+    screen.fill(black)
+    place(l)
+
+
+    pygame.display.update()
+    clock.tick(60)
+
+
+'''while r == 0:
     g = x.xcoord - y.xcoord
     x_acceleration, y_acceleration = calculate_a(l)
     update_coords(l, x_acceleration, y_acceleration)
@@ -156,5 +213,5 @@ while r == 0:
     print(' ')
 
     time.sleep(.1)
-
+'''
 
