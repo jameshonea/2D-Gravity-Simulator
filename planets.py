@@ -23,6 +23,57 @@ then break it down into components from there. otherwise even if two objects
 are very far about in the x coordinate, if they have nearly similar y coordinates
 a huge ay will be calculated sending them flying off in the y direction '''
 
+def a(plist):
+    ax_list = []
+    ay_list = []
+    temp_list = plist
+    for e in plist:
+        # create a new list populated with all objects except the current one
+
+        index = temp_list.index(e)
+        del temp_list[index]
+
+        x_accel = 0
+        y_accel = 0
+
+        for i in temp_list:
+            # here we use newton's law of gravitation to calculate a.
+            #  we iterate through
+            # each of the OTHER planets and calculate a for each and sum
+            # them up. if the planet in question is to the left of the planet
+            # we're summing the acceleration for, we change a to negative.
+
+            # note: we skip calculating the net force because
+            # F = m1a --> a = F/m1 = ((m1*m2)/(x1-x2)^2) / m1 = m2/((x1-x2)^2).
+
+            a_net =  100000*((i.mass)/(math.sqrt(((e.xcoord - i.xcoord)**2)+(e.ycoord - i.ycoord)**2)))  
+
+            try:
+                theta = abs(math.atan((e.ycoord - i.ycoord)/(e.xcoord - i.xcoord)))
+            except:
+                theta = math.pi / 2
+            print(theta)
+            ax = a_net * math.cos(theta)
+            print(ax)
+            ay = a_net * math.sin(theta)
+            print(ay)
+                              
+            if e.xcoord - i.xcoord > 0:
+                ax = (-1)*ax
+            x_accel += ax
+
+            if e.ycoord - i.ycoord > 0:
+                ay = (-1)*ay
+            y_accel += ay
+                
+        ax_list.append(x_accel)
+        ay_list.append(y_accel)
+
+
+        # add back to list. this happens at the end of each iteration.
+        temp_list.insert(index, e)
+
+    return ax_list, ay_list
 def calculate_a(plist):
     ax_list = []
     ay_list = []
@@ -46,7 +97,7 @@ def calculate_a(plist):
             # note: we skip calculating the net force because
             # F = m1a --> a = F/m1 = ((m1*m2)/(x1-x2)^2) / m1 = m2/((x1-x2)^2).
             try:
-                ax = 10000*((i.mass)/((e.xcoord - i.xcoord)**2))
+                ax = 1000000*((i.mass)/((e.xcoord - i.xcoord)**2))
             except:
                 ax = 0
                 
@@ -55,7 +106,7 @@ def calculate_a(plist):
             x_accel += ax
 
             try:
-                ay = 10000*((i.mass)/((e.ycoord - i.ycoord)**2))
+                ay = 1000000*((i.mass)/((e.ycoord - i.ycoord)**2))
             except:
                 ay = 0
 
@@ -97,7 +148,7 @@ def update_coords(plist, ax_list, ay_list):
         e.xvel = vf
         #print('updated x vel' + str(e.xvel))
         e.xcoord = e.xcoord + d
-        print('new x coord: ' + str(e.xcoord))
+        #print('new x coord: ' + str(e.xcoord))
 
         ay = ay_list[index]
         vf = e.yvel + (ay * interval)
@@ -105,13 +156,13 @@ def update_coords(plist, ax_list, ay_list):
 
         e.yvel = vf
         e.ycoord = e.ycoord + d
-        print('new y coord: ' + str(e.ycoord))
+        #print('new y coord: ' + str(e.ycoord))
 
 def collision_detect(plist):
     # checks the distance (magnitude of the distance) between each object in plist
     # destroys them if they are within a set distance of each other, to simulate
     # collisions. as above, the distance can be modifed from following variable.
-    collision_dist = 1
+    collision_dist = 3.5
     planet_list = plist
     
     for e in planet_list:
@@ -120,7 +171,7 @@ def collision_detect(plist):
         for i in planet_list:
             # first calculate the magnitude of the distance between the two objects.
             magnitude = math.sqrt(((e.xcoord - i.xcoord)**2) + ((e.ycoord - i.ycoord)**2))
-            print(magnitude)
+            #print(magnitude)
 
             # first make sure we're not dealing with the same planet as e. if we
             # didn't skip this one, we'd end up destroying every planet on the first
@@ -144,14 +195,16 @@ def collision_detect(plist):
 
 
 
-x = planet(100,0,0,0,.5)
-y = planet(-100,0,0,0,.5)
-z = planet(-4,100,3,4,5)
+x = planet(300,0,0,1500,.5)
+y = planet(0,0,0,0,50)
+z = planet(50,100,3,300,5)
+c = planet(200,0,0,300,2)
 
 l = []
 l.append(x)
 l.append(y)
-# l.append(z)
+l.append(z)
+#l.append(c)
 
 r = 0
 
@@ -159,8 +212,8 @@ r = 0
 
 pygame.init()
 
-display_width = 800
-display_height = 600
+display_width = 1280
+display_height = 1060
 
 black = (0,0,0)
 planet_color = (255,255,255)
@@ -180,8 +233,8 @@ def place(plist):
 
     for e in plist:
 
-        xpos = round(e.xcoord + 400)
-        ypos = round(e.ycoord + 300)
+        xpos = round(e.xcoord + 640)
+        ypos = round(e.ycoord + 530)
         pygame.draw.circle(screen, planet_color, (xpos, ypos), 4)
 
 while not crashed:
@@ -189,7 +242,7 @@ while not crashed:
         if event.type == pygame.QUIT:
             crashed = True
 
-    x_acceleration, y_acceleration = calculate_a(l)
+    x_acceleration, y_acceleration = a(l)
     update_coords(l, x_acceleration, y_acceleration)
     l = collision_detect(l)
 
@@ -199,6 +252,7 @@ while not crashed:
 
     pygame.display.update()
     clock.tick(60)
+    #time.sleep(15)
 
 
 '''while r == 0:
