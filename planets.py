@@ -3,7 +3,9 @@ import time
 import pygame
 import numpy as np
 
-colors = [(255,255,255),(255,0,0),(0,128,0),(0,139,139),(0,255,255),(255,192,203),(255,127,80)]
+colors = [(255,255,255),(255,0,0),(0,128,0),(0,139,139),(0,255,255),(255,192,203),
+          (255,127,80),(0,0,255), (0,0,128), (135,206,235), (95,158,160),
+          (224,255,255), (60,179,133), (144,238,144), (75,0,130)]
 
 class planet:
     def __init__(self, xcoord, ycoord, xvel, yvel, mass):
@@ -29,14 +31,6 @@ class planet:
 their properties to calculate the net force on each planet. it then uses these
 forces to calculate the net acceleration (one list for x and one for y)
 on each planet and appends this to a list of accelerations '''
-
-''' this needs to be rewritten. the problem is that i'm calculating the
-force component wise and applying it. this causes wildly inaccurate behavior
-when one of the components is really small. force is dependent on total distance,
-not components. so i must calculate the total magnitude of the force first and
-then break it down into components from there. otherwise even if two objects
-are very far about in the x coordinate, if they have nearly similar y coordinates
-a huge ay will be calculated sending them flying off in the y direction '''
 
 def a(plist):
     ax_list = []
@@ -67,11 +61,9 @@ def a(plist):
                 theta = abs(math.atan((e.ycoord - i.ycoord)/(e.xcoord - i.xcoord)))
             except:
                 theta = math.pi / 2
-            #print(theta)
+            
             ax = a_net * math.cos(theta)
-            #print(ax)
             ay = a_net * math.sin(theta)
-            #print(ay)
                               
             if e.xcoord - i.xcoord > 0:
                 ax = (-1)*ax
@@ -89,55 +81,7 @@ def a(plist):
         temp_list.insert(index, e)
 
     return ax_list, ay_list
-def calculate_a(plist):
-    ax_list = []
-    ay_list = []
-    temp_list = plist
-    for e in plist:
-        # create a new list populated with all objects except the current one
 
-        index = temp_list.index(e)
-        del temp_list[index]
-
-        x_accel = 0
-        y_accel = 0
-
-        for i in temp_list:
-            # here we use newton's law of gravitation to calculate a in
-            # the x direction (same process for y direction). we iterate through
-            # each of the OTHER planets and calculate a for each and sum
-            # them up. if the planet in question is to the left of the planet
-            # we're summing the acceleration for, we change a to negative.
-
-            # note: we skip calculating the net force because
-            # F = m1a --> a = F/m1 = ((m1*m2)/(x1-x2)^2) / m1 = m2/((x1-x2)^2).
-            try:
-                ax = 1000000*((i.mass)/((e.xcoord - i.xcoord)**2))
-            except:
-                ax = 0
-                
-            if e.xcoord - i.xcoord > 0:
-                ax = (-1)*ax
-            x_accel += ax
-
-            try:
-                ay = 1000000*((i.mass)/((e.ycoord - i.ycoord)**2))
-            except:
-                ay = 0
-
-            if e.ycoord - i.ycoord > 0:
-                ay = (-1)*ay
-            y_accel += ay
-                
-        ax_list.append(x_accel)
-        ay_list.append(y_accel)
-
-
-        # add back to list. this happens at the end of each iteration.
-        temp_list.insert(index, e)
-
-    return ax_list, ay_list
-        
 ''' the next function takes in the found accelerations as a list and one by one
 uses kinematics to move the planets over a small time interval assuming constant
 acceleration. the time interval must be small as the acceleration is not actually
@@ -154,16 +98,13 @@ def update_coords(plist, ax_list, ay_list):
         index = plist.index(e)
 
         ax = ax_list[index]
-        #print('1 x acceleration:' + str(ax))
         vf = e.xvel + (ax * interval)
-        #print('1 x vel:' + str(vf))
+        
         d = ((vf + e.xvel) * interval) / 2
-        #print('1 distance traveled' + str(d))
 
         e.xvel = vf
-        #print('updated x vel' + str(e.xvel))
         e.xcoord = e.xcoord + d
-        #print('new x coord: ' + str(e.xcoord))
+        
 
         ay = ay_list[index]
         vf = e.yvel + (ay * interval)
@@ -171,7 +112,7 @@ def update_coords(plist, ax_list, ay_list):
 
         e.yvel = vf
         e.ycoord = e.ycoord + d
-        #print('new y coord: ' + str(e.ycoord))
+        
 
 def collision_detect(plist):
     # checks the distance (magnitude of the distance) between each object in plist
@@ -186,7 +127,6 @@ def collision_detect(plist):
         for i in planet_list:
             # first calculate the magnitude of the distance between the two objects.
             magnitude = math.sqrt(((e.xcoord - i.xcoord)**2) + ((e.ycoord - i.ycoord)**2))
-            #print(magnitude)
 
             # first make sure we're not dealing with the same planet as e. if we
             # didn't skip this one, we'd end up destroying every planet on the first
@@ -218,6 +158,14 @@ d = planet(10,0,0,300,.7)
 e = planet(30,600,200,0,3)
 r = planet(-300,-200,-300,20,10)
 o = planet(500,200,-100,0,200)
+m = planet(200,400,55,100,7)
+p = planet(200,-300,234,-30,.5)
+w = planet(100,575,0,200,3)
+b = planet(1000,0,-400,320,30)
+q = planet(275,-275,0,305,.5)
+it = planet(-300,300,-100,-100,10)
+big = planet(100,-100,-50,-50,200)
+otherbig = planet(500,300,-70,20,5000)
 
 l = []
 l.append(x)
@@ -228,10 +176,14 @@ l.append(d)
 l.append(e)
 l.append(r)
 l.append(o)
-
-
-r = 0
-
+l.append(m)
+l.append(p)
+l.append(w)
+l.append(b)
+l.append(q)
+l.append(it)
+l.append(big)
+l.append(otherbig)
 
 
 pygame.init()
@@ -276,20 +228,6 @@ while not crashed:
 
     pygame.display.update()
     clock.tick(60)
-    #time.sleep(15)
 
 
-'''while r == 0:
-    g = x.xcoord - y.xcoord
-    x_acceleration, y_acceleration = calculate_a(l)
-    update_coords(l, x_acceleration, y_acceleration)
-    #l = collision_detect(l)
-    
-    #print(x.xcoord)
-    #print(y.xcoord)
-   # print(y.xvel)
-    print(' ')
-
-    time.sleep(.1)
-'''
 
