@@ -1,6 +1,9 @@
 import math
 import time
 import pygame
+import numpy as np
+
+colors = [(255,255,255),(255,0,0),(0,128,0),(0,139,139),(0,255,255),(255,192,203),(255,127,80)]
 
 class planet:
     def __init__(self, xcoord, ycoord, xvel, yvel, mass):
@@ -9,6 +12,18 @@ class planet:
         self.xvel = xvel
         self.yvel = yvel
         self.mass = mass
+
+        i = np.random.randint(0, high=len(colors))
+        self.color = colors[i]
+        print(self.color)
+
+        if self.mass < 3:
+            self.radius = 4
+        elif self.mass >= 3 and self.mass < 10:
+            self.radius = 5
+        else:
+            self.radius = 6
+        
 
 ''' next is a function that takes in a list of planet objects and uses
 their properties to calculate the net force on each planet. it then uses these
@@ -46,17 +61,17 @@ def a(plist):
             # note: we skip calculating the net force because
             # F = m1a --> a = F/m1 = ((m1*m2)/(x1-x2)^2) / m1 = m2/((x1-x2)^2).
 
-            a_net =  100000*((i.mass)/(math.sqrt(((e.xcoord - i.xcoord)**2)+(e.ycoord - i.ycoord)**2)))  
+            a_net =  1000*((i.mass)/(math.sqrt(((e.xcoord - i.xcoord)**2)+(e.ycoord - i.ycoord)**2)))  
 
             try:
                 theta = abs(math.atan((e.ycoord - i.ycoord)/(e.xcoord - i.xcoord)))
             except:
                 theta = math.pi / 2
-            print(theta)
+            #print(theta)
             ax = a_net * math.cos(theta)
-            print(ax)
+            #print(ax)
             ay = a_net * math.sin(theta)
-            print(ay)
+            #print(ay)
                               
             if e.xcoord - i.xcoord > 0:
                 ax = (-1)*ax
@@ -133,7 +148,7 @@ def update_coords(plist, ax_list, ay_list):
     # both components. then update the final velocity to the initial velocity
     # and add d to the position of the planet. the time interval is something
     # to be adjusted and can be changed using the variable immediately below.
-    interval = .01 # seconds
+    interval = .0025 # seconds
 
     for e in plist:
         index = plist.index(e)
@@ -195,16 +210,25 @@ def collision_detect(plist):
 
 
 
-x = planet(300,0,0,1500,.5)
-y = planet(0,0,0,0,50)
-z = planet(50,100,3,300,5)
-c = planet(200,0,0,300,2)
+x = planet(300,0,0,150,.5)
+y = planet(0,0,0,0,100)
+z = planet(50,150,0,300,.2)
+c = planet(550,0,0,600,2)
+d = planet(10,0,0,300,.7)
+e = planet(30,600,200,0,3)
+r = planet(-300,-200,-300,20,10)
+o = planet(500,200,-100,0,200)
 
 l = []
 l.append(x)
 l.append(y)
 l.append(z)
-#l.append(c)
+l.append(c)
+l.append(d)
+l.append(e)
+l.append(r)
+l.append(o)
+
 
 r = 0
 
@@ -213,7 +237,7 @@ r = 0
 pygame.init()
 
 display_width = 1280
-display_height = 1060
+display_height = 1000
 
 black = (0,0,0)
 planet_color = (255,255,255)
@@ -234,8 +258,8 @@ def place(plist):
     for e in plist:
 
         xpos = round(e.xcoord + 640)
-        ypos = round(e.ycoord + 530)
-        pygame.draw.circle(screen, planet_color, (xpos, ypos), 4)
+        ypos = round((-1)* e.ycoord + 500)
+        pygame.draw.circle(screen, e.color, (xpos, ypos), e.radius)
 
 while not crashed:
     for event in pygame.event.get():
