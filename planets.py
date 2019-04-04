@@ -145,31 +145,55 @@ def collision_detect(plist):
                     break
 
     return planet_list
+
+def collision_merge(plist):
+    collision_dist = 5
+    planet_list  = plist
+
+    for e in planet_list:
+        for i in planet_list:
+             # first calculate the magnitude of the distance between the two objects.
+            magnitude = math.sqrt(((e.xcoord - i.xcoord)**2) + ((e.ycoord - i.ycoord)**2))
+
+            # first make sure we're not dealing with the same planet as e. if we
+            # didn't skip this one, we'd end up destroying every planet on the first
+            # pass as it would calculate the distance to be zero. trying to find a
+            # more efficient way of handling this at the moment.
+            if magnitude > .00001:
+                if magnitude < collision_dist:
+
+                    planet_list.append(planet(e.xcoord, e.ycoord, 0, 0, e.mass + i.mass))
+                    del planet_list[planet_list.index(e)]
+                    del planet_list[planet_list.index(i)]
+                    break
+
+    return planet_list
                     
-                    
 
 
 
-x = planet(300,0,0,150,.5)
-y = planet(0,0,0,0,100)
+x = planet(100,0,0,0,2)
+y = planet(-100,0,0,0,100)
 z = planet(50,150,0,300,.2)
 c = planet(550,0,0,600,2)
 d = planet(10,0,0,300,.7)
 e = planet(30,600,200,0,3)
 r = planet(-300,-200,-300,20,10)
-o = planet(500,200,-100,0,200)
+o = planet(0,100,0,0,200)
 m = planet(200,400,55,100,7)
 p = planet(200,-300,234,-30,.5)
 w = planet(100,575,0,200,3)
 b = planet(1000,0,-400,320,30)
 q = planet(275,-275,0,305,.5)
 it = planet(-300,300,-100,-100,10)
-big = planet(100,-100,-50,-50,200)
+big = planet(-100,55,0,0,200)
 otherbig = planet(500,300,-70,20,5000)
+
 
 l = []
 l.append(x)
 l.append(y)
+
 l.append(z)
 l.append(c)
 l.append(d)
@@ -184,6 +208,7 @@ l.append(q)
 l.append(it)
 l.append(big)
 l.append(otherbig)
+
 
 
 pygame.init()
@@ -220,7 +245,7 @@ while not crashed:
 
     x_acceleration, y_acceleration = a(l)
     update_coords(l, x_acceleration, y_acceleration)
-    l = collision_detect(l)
+    l = collision_merge(l)
 
     screen.fill(black)
     place(l)
