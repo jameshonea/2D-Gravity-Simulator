@@ -60,7 +60,10 @@ def a(plist):
             try:
                 theta = abs(math.atan((e.ycoord - i.ycoord)/(e.xcoord - i.xcoord)))
             except:
-                theta = math.pi / 2
+                if e.ycoord - i.ycoord > 0:
+                    theta = math.pi / 2
+                else:
+                    theta = (3/2) * math.pi
             
             ax = a_net * math.cos(theta)
             ay = a_net * math.sin(theta)
@@ -161,8 +164,14 @@ def collision_merge(plist):
             # more efficient way of handling this at the moment.
             if magnitude > .00001:
                 if magnitude < collision_dist:
+                    # use conservation of momentum to calculate new x and y velocities.
+                    # pi = pf --> m1v1 + m2v2 = (m1+m2)vf
 
-                    planet_list.append(planet(e.xcoord, e.ycoord, 0, 0, e.mass + i.mass))
+                    x_vel_final = ((e.mass * e.xvel) + (i.mass * i.xvel))/(e.mass + i.mass)
+                    y_vel_final = ((e.mass * e.yvel) + (i.mass * i.yvel))/(e.mass + i.mass)
+                    
+
+                    planet_list.append(planet(e.xcoord, e.ycoord, x_vel_final, y_vel_final, e.mass + i.mass))
                     del planet_list[planet_list.index(e)]
                     del planet_list[planet_list.index(i)]
                     break
@@ -172,11 +181,11 @@ def collision_merge(plist):
 
 
 
-x = planet(100,0,0,0,2)
-y = planet(-100,0,0,0,100)
-z = planet(50,150,0,300,.2)
-c = planet(550,0,0,600,2)
-d = planet(10,0,0,300,.7)
+x = planet(12,0,0,500,.1)
+y = planet(0,0,0,0,200)
+z = planet(-50,0,0,-300,.25)
+c = planet(350,0,0,250,1)
+d = planet(-450,0,0,-215,.002)
 e = planet(30,600,200,0,3)
 r = planet(-300,-200,-300,20,10)
 o = planet(0,100,0,0,200)
@@ -193,10 +202,11 @@ otherbig = planet(500,300,-70,20,5000)
 l = []
 l.append(x)
 l.append(y)
-
 l.append(z)
+
 l.append(c)
 l.append(d)
+'''
 l.append(e)
 l.append(r)
 l.append(o)
@@ -208,7 +218,7 @@ l.append(q)
 l.append(it)
 l.append(big)
 l.append(otherbig)
-
+'''
 
 
 pygame.init()
