@@ -5,7 +5,10 @@ import numpy as np
 
 colors = [(255,255,255),(255,0,0),(0,128,0),(0,139,139),(0,255,255),(255,192,203),
           (255,127,80),(0,0,255), (0,0,128), (135,206,235), (95,158,160),
-          (224,255,255), (60,179,133), (144,238,144), (75,0,130)]
+          (224,255,255), (60,179,133), (144,238,144), (75,0,130), (255,215,0),
+          (255,218,185), (0,128,128), (0, 139, 139), (218,165,32), (210,105,30),
+          (128,0,0), (250,240,230), (255,240,245), (47,79,79), (128,128,128),
+          (220,220,220), (105,105,105), (240,255,255), (240,248,255), (240,255,240)]
 
 class planet:
     def __init__(self, xcoord, ycoord, xvel, yvel, mass):
@@ -17,14 +20,17 @@ class planet:
 
         i = np.random.randint(0, high=len(colors))
         self.color = colors[i]
-        print(self.color)
 
-        if self.mass < 3:
+        if self.mass < .1:
+            self.radius = 3
+        elif self.mass >= .1 and self.mass < 3:
             self.radius = 4
-        elif self.mass >= 3 and self.mass < 10:
+        elif self.mass >= 1 and self.mass < 6:
             self.radius = 5
-        else:
+        elif self.mass >= 6 and self.mass < 20:
             self.radius = 6
+        else:
+            self.radius = 7
         
 
 ''' next is a function that takes in a list of planet objects and uses
@@ -115,7 +121,12 @@ def update_coords(plist, ax_list, ay_list):
 
         e.yvel = vf
         e.ycoord = e.ycoord + d
-        
+
+''' the next function is a separate coordinate updating function that will
+update coords in such a way that the object with the largest mass will be placed
+in the center of the screen. an option exists to toggle between the two functions.
+this is to prevent a solar system from drifting off screen'
+'''
 
 def collision_detect(plist):
     # checks the distance (magnitude of the distance) between each object in plist
@@ -184,29 +195,34 @@ def collision_merge(plist):
 x = planet(12,0,0,500,.1)
 y = planet(0,0,0,0,200)
 z = planet(-50,0,0,-300,.25)
-c = planet(350,0,0,250,1)
-d = planet(-450,0,0,-215,.002)
-e = planet(30,600,200,0,3)
-r = planet(-300,-200,-300,20,10)
-o = planet(0,100,0,0,200)
-m = planet(200,400,55,100,7)
-p = planet(200,-300,234,-30,.5)
-w = planet(100,575,0,200,3)
-b = planet(1000,0,-400,320,30)
-q = planet(275,-275,0,305,.5)
-it = planet(-300,300,-100,-100,10)
-big = planet(-100,55,0,0,200)
-otherbig = planet(500,300,-70,20,5000)
+c = planet(350,0,0,300,1)
+d = planet(-450,0,0,-300,.002)
+e = planet(-150,0,0,-350,1.2)
+r = planet(0,100,-500,0,.5)
+o = planet(0,300,-600,0,3)
+m = planet(0,-400,600,0,.3)
+p = planet(250,0,0,300,.5)
+w = planet(500,0,0,200,.05)
+b = planet(1000,0,100,420,.3)
+q = planet(300,0,0,350,5)
+it = planet(-400,0,0,-600,0.001)
+bg = planet(-100,55,75,-30,.005)
+qw = planet(350,350,-250,250,.25)
+we = planet(-200,-200,-100,-350,.05)
+otherbig = planet(300,450,-70,20,3)
+er = planet(-300,400,393,-230,.5)
+rt = planet(405,303,383,29,.01)
+tt = planet(304,100,88,200,.001)
+ty = planet(20,300,-880,202,.005)
+yu = planet(300,400,-100,-75,50)
 
 
 l = []
-l.append(x)
 l.append(y)
+l.append(x)
 l.append(z)
-
 l.append(c)
 l.append(d)
-'''
 l.append(e)
 l.append(r)
 l.append(o)
@@ -216,10 +232,24 @@ l.append(w)
 l.append(b)
 l.append(q)
 l.append(it)
-l.append(big)
-l.append(otherbig)
-'''
 
+l.append(bg)
+l.append(otherbig)
+l.append(qw)
+l.append(we)
+l.append(er)
+l.append(rt)
+l.append(tt)
+l.append(ty)
+l.append(yu)
+
+
+fixed_planet = 1 # set to 1 to fix the center to the most massive planet
+
+''' below conditional block is the game loop to run if fixed_planet = 1 i.e. if we want
+to fix to the planet with the largest mass. this will recaculate to the largest planet
+each pass-through, so if a new planet suddenly becomes largest it will fix on that planet.
+'''
 
 pygame.init()
 
@@ -227,7 +257,6 @@ display_width = 1280
 display_height = 1000
 
 black = (0,0,0)
-planet_color = (255,255,255)
 
 # setup the display
 screen = pygame.display.set_mode((display_width, display_height))
@@ -235,6 +264,46 @@ pygame.display.set_caption('Solar System 2D')
 
 clock = pygame.time.Clock()
 crashed = False
+
+def place_fixed(plist):
+
+    mass_index = 0
+    largest_mass = 0
+
+    for planet in plist:
+        if planet.mass > largest_mass:
+            largest_mass = planet.mass
+            mass_index = plist.index(planet)
+
+    x_pos_zero = plist[mass_index].xcoord
+    y_pos_zero = plist[mass_index].ycoord
+    
+    for e in plist:
+        xpos = round(e.xcoord - x_pos_zero + 640)
+        ypos = round((-1)*(e.ycoord - y_pos_zero) + 500)
+        pygame.draw.circle(screen, e.color, (xpos, ypos), e.radius)
+
+''' below conditional block is the game loop to run if fixed_planet = 1 i.e. if we want
+to fix to the planet with the largest mass. this will recaculate to the largest planet
+each pass-through, so if a new planet suddenly becomes largest it will fix on that planet.
+'''
+
+if fixed_planet == 1:
+    while not crashed:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                crashed = True
+
+        x_acceleration, y_acceleration = a(l)
+        update_coords(l, x_acceleration, y_acceleration)
+        l = collision_merge(l)
+
+        screen.fill(black)
+        place_fixed(l)
+
+
+        pygame.display.update()
+        clock.tick(60)
 
 ''' the next function is the placement function, which places all of the planets in their
 correct positions on a pygame.surface object for each frame. that is, it runs once
