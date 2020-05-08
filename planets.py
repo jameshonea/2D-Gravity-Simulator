@@ -2,6 +2,7 @@ import math
 import time
 import pygame
 import numpy as np
+import random
 
 
 class planet:
@@ -182,13 +183,35 @@ def collision_merge(plist):
 
     return planet_list
                     
+''' below is code for random generation of planets. plan is for this to become sophisticated enough to only generate
+planets with masses below a large central object, as well as allow for completely random generation of objects
+'''
 
+star = planet(0,0,0,0,500)
+l = [] # initialize list of planet objects
+l.append(star)
 
+n = 1000 # number of planets to generate
+
+for _ in range(n):
+    temp_xcoord = random.uniform(.1,750)
+    temp_ycoord = .1 #random.randint(-750,750)
+    temp_xvel = .1 #random.randint(100,500)
+    temp_yvel = random.uniform(700,1000)
+    temp_mass = random.uniform(0.1,1)
+
+    temp_planet = planet(temp_xcoord, temp_ycoord, temp_xvel, temp_yvel, temp_mass)
+    l.append(temp_planet)
+
+'''
 
 x = planet(12,0,0,500,.1)
 y = planet(0,0,0,0,200)
 z = planet(-50,0,0,-350,.25)
 c = planet(350,0,0,350,1)
+d = planet(-400,0,0,-150,100)
+e = planet(0,250,-200,30,10)
+f = planet(0,-250,200,0,2)
 
 
 
@@ -196,17 +219,16 @@ l = []
 l.append(y)
 l.append(x)
 l.append(z)
-'''
-l.append(c)
+l.append(d)
 
+l.append(c)
+l.append(e)
+l.append(f)
 '''
+
 
 fixed_planet = 1 # set to 1 to fix the center to the most massive planet
 
-''' below conditional block is the game loop to run if fixed_planet = 1 i.e. if we want
-to fix to the planet with the largest mass. this will recaculate to the largest planet
-each pass-through, so if a new planet suddenly becomes largest it will fix on that planet.
-'''
 
 pygame.init()
 
